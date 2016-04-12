@@ -1,7 +1,7 @@
-<?php
+<?php namespace app\models;
 
-namespace app\models;
-
+use dektrium\user\models\User;
+use yii\helpers\ArrayHelper;
 use Yii;
 
 /**
@@ -20,6 +20,12 @@ use Yii;
  */
 class Notification extends \yii\db\ActiveRecord
 {
+
+    const TYPE_EMAIL = 1;
+    const TYPE_BROWSER = 2;
+
+    private $_userList = null;
+
     /**
      * @inheritdoc
      */
@@ -79,5 +85,47 @@ class Notification extends \yii\db\ActiveRecord
     public function getNotificationTypes()
     {
         return $this->hasMany(NotificationType::className(), ['notification_id' => 'id']);
+    }
+
+    public function getEventList()
+    {
+        $reflectionArticle = new \ReflectionClass('\app\models\Article');
+        $articleConstants = array_map(function($val) {
+            return '\app\models\Article::' . $val;
+        }, array_keys($reflectionArticle->getConstants()));
+
+        $reflectionUser = new \ReflectionClass('\dektrium\user\models\User');
+        $userConstants = array_map(function($val) {
+            return '\dektrium\user\models\User::' . $val;
+        }, array_keys($reflectionUser->getConstants()));
+
+        $events = array_filter(array_merge($articleConstants, $userConstants), function($val) {
+            return strpos($val, '::EVENT_') !== false;
+        });
+        
+        return array_combine($events, $events);
+    }
+
+    public function getUserList()
+    {
+        if (!is_null($this->_userList)) {
+            return $this->_userList;
+        }
+
+        $users = User::find()
+            ->where('blocked_at IS NULL')
+            ->orderBy('username')
+            ->all();
+
+        $this->_userList = ArrayHelper::map($users, 'id', 'username');
+        return $this->_userList;
+    }
+
+    public function getTypeList()
+    {
+        return [
+            self::TYPE_EMAIL => 'Email',
+            self::TYPE_BROWSER => 'Browser'
+        ];
     }
 }

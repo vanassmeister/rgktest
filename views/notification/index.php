@@ -26,8 +26,14 @@ $this->params['breadcrumbs'][] = $this->title;
 
             'id',
             'event',
-            'sender_id',
-            'recipient_id',
+            [
+                'label' => 'Sender',
+                'attribute' => 'sender.username'
+            ],            
+            [
+                'label' => 'Recipient',
+                'attribute' => 'recipient.username'
+            ],                  
             'subject',
             // 'text',
 

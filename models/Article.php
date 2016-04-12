@@ -1,6 +1,4 @@
-<?php
-
-namespace app\models;
+<?php namespace app\models;
 
 use Yii;
 
@@ -18,6 +16,7 @@ use Yii;
  */
 class Article extends \yii\db\ActiveRecord
 {
+
     /**
      * @inheritdoc
      */
