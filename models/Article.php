@@ -1,7 +1,9 @@
 <?php namespace app\models;
 
 use yii\behaviors\TimestampBehavior;
-use dektrium\user\models\User;
+use app\models\User;
+use app\components\notification\PlaceholdersInterface;
+use yii\helpers\Url;
 use Yii;
 
 /**
@@ -16,7 +18,7 @@ use Yii;
  *
  * @property User $author
  */
-class Article extends \yii\db\ActiveRecord
+class Article extends \yii\db\ActiveRecord implements PlaceholdersInterface
 {
 
     /**
@@ -69,5 +71,13 @@ class Article extends \yii\db\ActiveRecord
     public function getAuthor()
     {
         return $this->hasOne(User::className(), ['id' => 'author_id']);
+    }
+    
+    public function getPlaceholders()
+    {
+        return [
+            '{title}' => $this->title,
+            '{url}' => Url::toRoute(['/article/view', 'id' => $this->id])
+        ];
     }
 }

@@ -5,7 +5,7 @@
  */
 namespace app\components;
 
-use dektrium\user\models\User;
+use app\models\User;
 use yii\helpers\ArrayHelper;
 
 /**

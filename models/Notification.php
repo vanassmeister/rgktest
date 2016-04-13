@@ -1,6 +1,10 @@
 <?php namespace app\models;
 
-use dektrium\user\models\User;
+use app\models\User;
+use app\components\notification\transport\BrowserTransport;
+use app\components\notification\transport\EmailTransport;
+use ReflectionClass;
+use Exception;
 use Yii;
 
 /**
@@ -38,7 +42,9 @@ class Notification extends \yii\db\ActiveRecord
     {
         return [
             [['event',], 'required'],
-            [['sender_id', 'recipient_id'], 'filter', 'filter' => function($val){return $val ? $val : null;}],
+            [['sender_id', 'recipient_id'], 'filter', 'filter' => function($val) {
+                return $val ? $val : null;
+            }],
             [['sender_id', 'recipient_id'], 'integer'],
             [['event', 'subject', 'text'], 'string', 'max' => 255],
             [['recipient_id'], 'exist', 'skipOnError' => true, 'targetClass' => User::className(), 'targetAttribute' => ['recipient_id' => 'id']],
@@ -87,21 +93,12 @@ class Notification extends \yii\db\ActiveRecord
 
     public function getEventList()
     {
-        $reflectionArticle = new \ReflectionClass('\app\models\Article');
-        $articleConstants = array_map(function($val) {
-            return '\app\models\Article::' . $val;
-        }, array_keys($reflectionArticle->getConstants()));
+        $events = [];
+        foreach ($this->getModelClasses() as $class) {
+            $events += $this->getModelEvents($class);
+        }
 
-        $reflectionUser = new \ReflectionClass('\dektrium\user\models\User');
-        $userConstants = array_map(function($val) {
-            return '\dektrium\user\models\User::' . $val;
-        }, array_keys($reflectionUser->getConstants()));
-
-        $events = array_filter(array_merge($articleConstants, $userConstants), function($val) {
-            return strpos($val, '::EVENT_') !== false;
-        });
-        
-        return array_combine($events, $events);
+        return $events;
     }
 
     public function getTypeList()
@@ -110,5 +107,61 @@ class Notification extends \yii\db\ActiveRecord
             self::TYPE_EMAIL => 'Email',
             self::TYPE_BROWSER => 'Browser'
         ];
+    }
+
+    public function getModelClass()
+    {
+        $parts = explode('::', $this->event);
+        return $parts[0];
+    }
+
+    public function getModelClasses()
+    {
+        return [
+            '\app\models\Article',
+            '\app\models\User'
+        ];
+    }
+
+    public function getModelEvents($class)
+    {
+        $reflection = new ReflectionClass($class);
+        $constants = array_map(function($val) use($class) {
+            return "$class::$val";
+        }, array_keys($reflection->getConstants()));
+
+        return array_filter($constants, function($val) {
+            return strpos($val, '::EVENT_') !== false;
+        });
+    }
+
+    public function send($event)
+    {
+        $model = $event->sender;
+        switch (get_class($model)) {
+            case '\app\models\Article':
+                $sender_id = $model->author_id;
+                break;
+            case '\app\models\User':
+                $sender_id = $model->id;
+        }
+        
+        if ($this->sender_id && $this->sender_id !== $sender_id) {
+            return;
+        }
+
+        foreach ($this->getNotificationTypes() as $notificationType) {
+            switch ($notificationType) {
+                case self::TYPE_EMAIL:
+                    $transport = new EmailTransport($this, $model);
+                    break;
+                case self::TYPE_BROWSER:
+                    $transport = new BrowserTransport($this, $model);
+                    break;
+                default :
+                    throw new Exception('Unknown transport');
+            }
+            $transport->send();
+        }
     }
 }
