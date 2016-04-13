@@ -1,7 +1,6 @@
 <?php namespace app\models;
 
 use dektrium\user\models\User;
-use yii\helpers\ArrayHelper;
 use Yii;
 
 /**
@@ -24,8 +23,6 @@ class Notification extends \yii\db\ActiveRecord
     const TYPE_EMAIL = 1;
     const TYPE_BROWSER = 2;
 
-    private $_userList = null;
-
     /**
      * @inheritdoc
      */
@@ -40,7 +37,8 @@ class Notification extends \yii\db\ActiveRecord
     public function rules()
     {
         return [
-            [['event', 'sender_id', 'recipient_id'], 'required'],
+            [['event',], 'required'],
+            [['sender_id', 'recipient_id'], 'filter', 'filter' => function($val){return $val ? $val : null;}],
             [['sender_id', 'recipient_id'], 'integer'],
             [['event', 'subject', 'text'], 'string', 'max' => 255],
             [['recipient_id'], 'exist', 'skipOnError' => true, 'targetClass' => User::className(), 'targetAttribute' => ['recipient_id' => 'id']],
@@ -104,21 +102,6 @@ class Notification extends \yii\db\ActiveRecord
         });
         
         return array_combine($events, $events);
-    }
-
-    public function getUserList()
-    {
-        if (!is_null($this->_userList)) {
-            return $this->_userList;
-        }
-
-        $users = User::find()
-            ->where('blocked_at IS NULL')
-            ->orderBy('username')
-            ->all();
-
-        $this->_userList = ArrayHelper::map($users, 'id', 'username');
-        return $this->_userList;
     }
 
     public function getTypeList()

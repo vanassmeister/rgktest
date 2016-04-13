@@ -1,11 +1,13 @@
 <?php
 use yii\helpers\Html;
 use yii\widgets\ActiveForm;
-use app\models\Article;
+use app\components\FormHelper;
 
 /* @var $this yii\web\View */
 /* @var $model app\models\Notification */
 /* @var $form yii\widgets\ActiveForm */
+
+$userList = ['' => 'All users'] + FormHelper::getUserList();
 
 ?>
 
@@ -15,19 +17,9 @@ use app\models\Article;
 
     <?= $form->field($model, 'event')->dropDownList($model->getEventList()) ?>
 
-    <?= $form->field($model, 'sender_id')->dropDownList($model->getUserList()) ?>
-    <div class="checkbox">
-        <label>
-            <input type="checkbox"> All senders
-        </label>
-    </div>  
+    <?= $form->field($model, 'sender_id')->dropDownList($userList) ?>
 
-    <?= $form->field($model, 'recipient_id')->dropDownList($model->getUserList()) ?>
-    <div class="checkbox">
-        <label>
-            <input type="checkbox"> All recipients
-        </label>
-    </div>  
+    <?= $form->field($model, 'recipient_id')->dropDownList($userList) ?>
 
     <?= $form->field($model, 'subject')->textInput(['maxlength' => true]) ?>
 

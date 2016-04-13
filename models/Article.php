@@ -1,5 +1,7 @@
 <?php namespace app\models;
 
+use yii\behaviors\TimestampBehavior;
+use dektrium\user\models\User;
 use Yii;
 
 /**
@@ -25,6 +27,13 @@ class Article extends \yii\db\ActiveRecord
         return 'article';
     }
 
+    public function behaviors()
+    {
+        return [
+            TimestampBehavior::className(),
+        ];
+    }
+
     /**
      * @inheritdoc
      */
@@ -32,7 +41,7 @@ class Article extends \yii\db\ActiveRecord
     {
         return [
             [['author_id', 'title'], 'required'],
-            [['author_id', 'created_at', 'updated_at'], 'integer'],
+            [['author_id'], 'integer'],
             [['text'], 'string'],
             [['title'], 'string', 'max' => 255],
             [['author_id'], 'exist', 'skipOnError' => true, 'targetClass' => User::className(), 'targetAttribute' => ['author_id' => 'id']],
