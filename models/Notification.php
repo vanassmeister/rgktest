@@ -93,7 +93,7 @@ class Notification extends \yii\db\ActiveRecord
     {
         return $this->hasMany(NotificationType::className(), ['notification_id' => 'id']);
     }
-
+    
     public function getEventList()
     {
         $events = [];

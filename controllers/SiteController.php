@@ -1,16 +1,19 @@
-<?php
-
-namespace app\controllers;
+<?php namespace app\controllers;
 
 use Yii;
 use yii\filters\AccessControl;
 use yii\web\Controller;
+use yii\web\Response;
 use yii\filters\VerbFilter;
+use yii\data\ActiveDataProvider;
 use app\models\LoginForm;
 use app\models\ContactForm;
+use app\models\NotificationBrowser;
+use app\models\NotificationView;
 
 class SiteController extends Controller
 {
+
     public function behaviors()
     {
         return [
@@ -49,7 +52,20 @@ class SiteController extends Controller
 
     public function actionIndex()
     {
-        return $this->render('index');
+        $notificationsProvider = new ActiveDataProvider([
+            'query' => NotificationBrowser::find()->where('recipient_id = :user_id OR recipient_id IS NULL', ['user_id' => Yii::$app->user->id]),
+            'pagination' => [
+                'pageSize' => 10,
+            ],
+        ]);
+
+        $this->view->registerJsFile('js/main.js', ['depends' => [
+                'app\assets\AppAsset',
+        ]]);
+
+        return $this->render('index', [
+                'notificationsProvider' => $notificationsProvider
+        ]);
     }
 
     public function actionLogin()
@@ -63,7 +79,7 @@ class SiteController extends Controller
             return $this->goBack();
         }
         return $this->render('login', [
-            'model' => $model,
+                'model' => $model,
         ]);
     }
 
@@ -83,12 +99,30 @@ class SiteController extends Controller
             return $this->refresh();
         }
         return $this->render('contact', [
-            'model' => $model,
+                'model' => $model,
         ]);
     }
 
     public function actionAbout()
     {
         return $this->render('about');
+    }
+
+    public function actionMark()
+    {
+        Yii::$app->response->format = Response::FORMAT_JSON;
+
+        $notification = NotificationBrowser::findOne(Yii::$app->request->post('id'));
+        if (!$notification) {
+            return ['status' => 'not found'];
+        }
+
+        $view = new NotificationView();
+        $view->notification_id = $notification->id;
+        $view->user_id = Yii::$app->user->id;
+
+        $notification->link('notificationViews', $view);
+
+        return ['status' => 'ok'];
     }
 }

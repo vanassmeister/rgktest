@@ -12,7 +12,6 @@ use Yii;
  * @property integer $recipient_id
  * @property string $subject
  * @property string $text
- * @property integer $is_viewed
  * @property integer $created_at
  * @property integer $updated_at
  *
@@ -41,7 +40,7 @@ class NotificationBrowser extends \yii\db\ActiveRecord
     public function rules()
     {
         return [
-            [['recipient_id', 'is_viewed'], 'integer'],
+            [['recipient_id'], 'integer'],
             [['subject', 'text'], 'string', 'max' => 255],
             [['recipient_id'], 'exist', 'skipOnError' => true, 'targetClass' => User::className(), 'targetAttribute' => ['recipient_id' => 'id']],
         ];
@@ -57,7 +56,6 @@ class NotificationBrowser extends \yii\db\ActiveRecord
             'recipient_id' => 'Recipient ID',
             'subject' => 'Subject',
             'text' => 'Text',
-            'is_viewed' => 'Is Viewed',
             'created_at' => 'Created At',
             'updated_at' => 'Updated At',
         ];
@@ -69,5 +67,13 @@ class NotificationBrowser extends \yii\db\ActiveRecord
     public function getRecipient()
     {
         return $this->hasOne(User::className(), ['id' => 'recipient_id']);
+    }
+    
+    public function getNotificationViews() {
+        return $this->hasMany(NotificationView::className(), ['notification_id' => 'id']);
+    }
+    
+    public function isNew() {
+        return $this->getNotificationViews()->where(['user_id' => Yii::$app->user->id])->count() == 0;
     }
 }
