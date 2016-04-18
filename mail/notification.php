@@ -6,4 +6,4 @@
 
 use yii\helpers\Html;
 
-Html::encode($text);
+echo Html::encode($text);

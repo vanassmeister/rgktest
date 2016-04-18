@@ -21,6 +21,11 @@ abstract class AbstractTransport
      * @var \app\models\Notification
      */
     protected $_notification;
+    
+    /**
+     *
+     * @var \app\components\notification\PlaceholdersInterface
+     */
     protected $_model;
 
     public function __construct(Notification $notification, PlaceholdersInterface $model)

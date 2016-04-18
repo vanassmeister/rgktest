@@ -26,6 +26,8 @@ class Notification extends \yii\db\ActiveRecord
 
     const TYPE_EMAIL = 1;
     const TYPE_BROWSER = 2;
+    
+    public $notificationTypeIds = [];
 
     /**
      * @inheritdoc
@@ -41,7 +43,7 @@ class Notification extends \yii\db\ActiveRecord
     public function rules()
     {
         return [
-            [['event',], 'required'],
+            [['event', 'notificationTypeIds'], 'required'],
             [['sender_id', 'recipient_id'], 'filter', 'filter' => function($val) {
                 return $val ? $val : null;
             }],
@@ -49,6 +51,7 @@ class Notification extends \yii\db\ActiveRecord
             [['event', 'subject', 'text'], 'string', 'max' => 255],
             [['recipient_id'], 'exist', 'skipOnError' => true, 'targetClass' => User::className(), 'targetAttribute' => ['recipient_id' => 'id']],
             [['sender_id'], 'exist', 'skipOnError' => true, 'targetClass' => User::className(), 'targetAttribute' => ['sender_id' => 'id']],
+            [['notificationTypeIds'], 'in', 'range' => array_keys(self::getTypeList()), 'allowArray' => true]
         ];
     }
 
@@ -95,18 +98,29 @@ class Notification extends \yii\db\ActiveRecord
     {
         $events = [];
         foreach ($this->getModelClasses() as $class) {
-            $events += $this->getModelEvents($class);
+            $events = array_merge($events, $this->getModelEvents($class));
         }
 
-        return $events;
+        return array_combine($events, $events);
     }
 
-    public function getTypeList()
+    public static function getTypeList()
     {
         return [
             self::TYPE_EMAIL => 'Email',
             self::TYPE_BROWSER => 'Browser'
         ];
+    }
+    
+    public static function getTypeName($typeId) {
+        $types = self::getTypeList();
+        return isset($types[$typeId]) ? $types[$typeId] : 'Unknown type';
+    }
+    
+    public function getTypeNames() {
+        $names = array_map(function($val) {
+            return Notification::getTypeName($val->type_id);}, $this->notificationTypes);
+        return implode(', ', $names);
     }
 
     public function getModelClass()
@@ -139,19 +153,22 @@ class Notification extends \yii\db\ActiveRecord
     {
         $model = $event->sender;
         switch (get_class($model)) {
-            case '\app\models\Article':
+            case 'app\models\Article':
                 $sender_id = $model->author_id;
                 break;
-            case '\app\models\User':
+            case 'app\models\User':
                 $sender_id = $model->id;
+                break;
+            default :
+                throw new Exception('Unknown model class');
         }
-        
-        if ($this->sender_id && $this->sender_id !== $sender_id) {
+
+        if ($this->sender_id && $this->sender_id != $sender_id) {
             return;
         }
 
-        foreach ($this->getNotificationTypes() as $notificationType) {
-            switch ($notificationType) {
+        foreach ($this->notificationTypes as $notificationType) {
+            switch ($notificationType->type_id) {
                 case self::TYPE_EMAIL:
                     $transport = new EmailTransport($this, $model);
                     break;
@@ -163,5 +180,24 @@ class Notification extends \yii\db\ActiveRecord
             }
             $transport->send();
         }
+    }
+    
+    public function afterFind()
+    {
+        parent::afterFind();
+        $this->notificationTypeIds = array_map(function($val){ 
+            return $val->type_id;}, $this->notificationTypes);
+    }
+
+    public function afterSave($insert, $changedAttributes)
+    {
+        parent::afterSave($insert, $changedAttributes);
+        
+        NotificationType::deleteAll(['notification_id' => $this->id]);
+        foreach ($this->notificationTypeIds as $typeId) {
+            $type = new NotificationType();
+            $type->type_id = $typeId;
+            $this->link('notificationTypes', $type);
+        }        
     }
 }

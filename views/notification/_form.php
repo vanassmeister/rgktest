@@ -2,6 +2,7 @@
 use yii\helpers\Html;
 use yii\widgets\ActiveForm;
 use app\components\FormHelper;
+use app\models\Notification;
 
 /* @var $this yii\web\View */
 /* @var $model app\models\Notification */
@@ -25,8 +26,10 @@ $userList = ['' => 'All users'] + FormHelper::getUserList();
 
     <?= $form->field($model, 'text')->textInput(['maxlength' => true]) ?>
     
-    <?= $form->field($model, 'notificationTypes')->listBox($model->getTypeList(), ['multiple' => 'true'])?>    
-
+    <?= $form->field($model, 'notificationTypeIds')->listBox(Notification::getTypeList(), ['multiple' => 'true'])?> 
+    
+    <?= $form->errorSummary($model); ?>
+    
     <div class="form-group">
         <?= Html::submitButton($model->isNewRecord ? 'Create' : 'Update', ['class' => $model->isNewRecord ? 'btn btn-success' : 'btn btn-primary']) ?>
     </div>

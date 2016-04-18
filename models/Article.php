@@ -77,7 +77,7 @@ class Article extends \yii\db\ActiveRecord implements PlaceholdersInterface
     {
         return [
             '{title}' => $this->title,
-            '{url}' => Url::toRoute(['/article/view', 'id' => $this->id])
+            '{url}' => Url::toRoute(['/article/view', 'id' => $this->id], true)
         ];
     }
 }

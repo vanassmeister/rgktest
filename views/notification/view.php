@@ -40,6 +40,11 @@ $this->params['breadcrumbs'][] = $this->title;
             ],
             'subject',
             'text',
+            [
+                'label' => 'Transport types',
+                'value' => $model->getTypeNames()
+            ],            
+            
         ],
     ]) ?>
 
