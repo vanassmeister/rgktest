@@ -97,7 +97,7 @@ class Notification extends \yii\db\ActiveRecord
     public function getEventList()
     {
         $events = [];
-        foreach ($this->getModelClasses() as $class) {
+        foreach (self::getModelClasses() as $class) {
             $events = array_merge($events, $this->getModelEvents($class));
         }
 
@@ -129,7 +129,7 @@ class Notification extends \yii\db\ActiveRecord
         return $parts[0];
     }
 
-    public function getModelClasses()
+    public static function getModelClasses()
     {
         return [
             '\app\models\Article',

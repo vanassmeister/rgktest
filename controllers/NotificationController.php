@@ -1,11 +1,10 @@
-<?php
-
-namespace app\controllers;
+<?php namespace app\controllers;
 
 use Yii;
 use app\models\Notification;
 use app\models\NotificationSearch;
 use yii\web\Controller;
+use yii\web\Response;
 use yii\web\NotFoundHttpException;
 use yii\filters\VerbFilter;
 
@@ -14,6 +13,7 @@ use yii\filters\VerbFilter;
  */
 class NotificationController extends Controller
 {
+
     /**
      * @inheritdoc
      */
@@ -39,8 +39,8 @@ class NotificationController extends Controller
         $dataProvider = $searchModel->search(Yii::$app->request->queryParams);
 
         return $this->render('index', [
-            'searchModel' => $searchModel,
-            'dataProvider' => $dataProvider,
+                'searchModel' => $searchModel,
+                'dataProvider' => $dataProvider,
         ]);
     }
 
@@ -52,7 +52,7 @@ class NotificationController extends Controller
     public function actionView($id)
     {
         return $this->render('view', [
-            'model' => $this->findModel($id),
+                'model' => $this->findModel($id),
         ]);
     }
 
@@ -64,12 +64,12 @@ class NotificationController extends Controller
     public function actionCreate()
     {
         $model = new Notification();
-        
+
         if ($model->load(Yii::$app->request->post()) && $model->save()) {
             return $this->redirect(['view', 'id' => $model->id]);
         } else {
             return $this->render('create', [
-                'model' => $model,
+                    'model' => $model,
             ]);
         }
     }
@@ -88,7 +88,7 @@ class NotificationController extends Controller
             return $this->redirect(['view', 'id' => $model->id]);
         } else {
             return $this->render('update', [
-                'model' => $model,
+                    'model' => $model,
             ]);
         }
     }
@@ -120,5 +120,20 @@ class NotificationController extends Controller
         } else {
             throw new NotFoundHttpException('The requested page does not exist.');
         }
+    }
+
+    public function actionPlaceholders($class)
+    {
+        Yii::$app->response->format = Response::FORMAT_JSON;
+        if (!in_array($class, Notification::getModelClasses())) {
+            return ['status' => 'class not found'];
+        }
+
+        /* @var $model \app\components\notification\PlaceholdersInterface */
+        $model = new $class;
+        return [
+            'status' => 'ok',
+            'placeholders' => array_keys($model->getPlaceholders())
+        ];
     }
 }

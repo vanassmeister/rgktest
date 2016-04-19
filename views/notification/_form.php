@@ -8,7 +8,9 @@ use app\models\Notification;
 /* @var $model app\models\Notification */
 /* @var $form yii\widgets\ActiveForm */
 
-$userList = ['' => 'All users'] + FormHelper::getUserList();
+$this->registerJsFile('js/notification.js', ['depends' => [
+        'app\assets\AppAsset',
+]]);
 
 ?>
 
@@ -18,13 +20,14 @@ $userList = ['' => 'All users'] + FormHelper::getUserList();
 
     <?= $form->field($model, 'event')->dropDownList($model->getEventList()) ?>
 
-    <?= $form->field($model, 'sender_id')->dropDownList($userList) ?>
+    <?= $form->field($model, 'sender_id')->dropDownList(FormHelper::getUserList()) ?>
 
-    <?= $form->field($model, 'recipient_id')->dropDownList($userList) ?>
+    <?= $form->field($model, 'recipient_id')->dropDownList(['' => 'All users'] + FormHelper::getUserList()) ?>
 
     <?= $form->field($model, 'subject')->textInput(['maxlength' => true]) ?>
 
     <?= $form->field($model, 'text')->textInput(['maxlength' => true]) ?>
+    <div id="notification-placeholders"></div>
     
     <?= $form->field($model, 'notificationTypeIds')->listBox(Notification::getTypeList(), ['multiple' => 'true'])?> 
     
