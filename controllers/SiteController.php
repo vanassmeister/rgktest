@@ -46,7 +46,9 @@ class SiteController extends Controller
     public function actionIndex()
     {
         $notificationsProvider = new ActiveDataProvider([
-            'query' => NotificationBrowser::find()->where('recipient_id = :user_id OR recipient_id IS NULL', ['user_id' => Yii::$app->user->id]),
+            'query' => NotificationBrowser::find()
+                ->where('recipient_id = :user_id OR recipient_id IS NULL', ['user_id' => Yii::$app->user->id])
+                ->orderBy('created_at DESC'),
             'pagination' => [
                 'pageSize' => 10,
             ],
