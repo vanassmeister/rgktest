@@ -55,7 +55,11 @@ $config = [
     'modules' => [
         'user' => [
             'class' => 'dektrium\user\Module',
-            'admins' => ['admin']
+            'admins' => ['admin'],
+            'enableConfirmation' => false,
+            'as defaultRole' => [
+                'class' => 'app\components\DefaultRoleBehavior'
+            ],
         ],
     ],    
 ];

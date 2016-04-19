@@ -7,7 +7,6 @@ namespace app\models;
 
 use dektrium\user\models\User as Yii2User;
 use app\components\notification\PlaceholdersInterface;
-use Yii;
 
 /**
  * Description of User
@@ -23,13 +22,5 @@ class User extends Yii2User implements PlaceholdersInterface
             '{username}' => $this->username,
             '{id}' => $this->id
         ];
-    }
-    
-    public function afterSave($insert, $changedAttributes)
-    {
-        parent::afterSave($insert, $changedAttributes);
-        $auth = Yii::$app->authManager;
-        $user = $auth->getRole('user');
-        $auth->assign($user, $this->id);
     }
 }
