@@ -12,9 +12,8 @@
 ------------
 
 Установить библиотеки composer
-
 ~~~
-php composer.phar install
+composer install
 ~~~
 
 Создать БД
