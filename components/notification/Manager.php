@@ -7,9 +7,7 @@ namespace app\components\notification;
 
 use yii\base\Component;
 use app\models\Notification;
-use dektrium\user\models\User;
 use yii\base\Event;
-use Yii;
 
 /**
  * Description of newPHPClass
@@ -31,11 +29,5 @@ class Manager extends Component
             Event::on($notification->getModelClass(), constant($notification->event), [$notification, 'send']);
         }
 
-        // Добавляем новым пользователям роль "user"
-        Event::on(User::className(), User::EVENT_AFTER_INSERT, function($event) {
-            $auth = Yii::$app->authManager;
-            $user = $auth->getRole('user');
-            $auth->assign($user, $event->sender->id);
-        });
     }
 }

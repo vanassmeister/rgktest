@@ -55,7 +55,7 @@ $user = Yii::$app->user;
             . Html::beginForm(['/user/security/logout'], 'post')
             . Html::submitButton(
                 'Logout (' . $user->identity->username . ')',
-                ['class' => 'btn btn-link']
+                ['class' => 'btn btn-link', 'style' => 'height: 50px;']
             )
             . Html::endForm()
             . '</li>';
