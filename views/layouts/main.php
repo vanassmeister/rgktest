@@ -10,6 +10,8 @@ use yii\widgets\Breadcrumbs;
 use app\assets\AppAsset;
 
 AppAsset::register($this);
+$user = Yii::$app->user;
+
 ?>
 <?php $this->beginPage() ?>
 <!DOCTYPE html>
@@ -33,26 +35,35 @@ AppAsset::register($this);
             'class' => 'navbar-inverse navbar-fixed-top',
         ],
     ]);
-    echo Nav::widget([
-        'options' => ['class' => 'navbar-nav navbar-right'],
-        'items' => [
-            ['label' => 'Home', 'url' => ['/site/index']],
+    
+    $items = [
+        ['label' => 'Home', 'url' => ['/site/index']],
+    ];
+    
+    if(!$user->isGuest && $user->can('admin')) {
+        $items = array_merge($items, [
             ['label' => 'Users', 'url' => ['/user/admin/index']],
             ['label' => 'Articles', 'url' => ['/article/index']],
-            ['label' => 'Notifications', 'url' => ['/notification/index']],
-            Yii::$app->user->isGuest ? (
-                ['label' => 'Login', 'url' => ['/user/security/login']]
-            ) : (
-                '<li>'
-                . Html::beginForm(['/user/security/logout'], 'post')
-                . Html::submitButton(
-                    'Logout (' . Yii::$app->user->identity->username . ')',
-                    ['class' => 'btn btn-link']
-                )
-                . Html::endForm()
-                . '</li>'
+            ['label' => 'Notifications', 'url' => ['/notification/index']],            
+        ]);
+    }
+    
+    if($user->isGuest) {
+        $items[] = ['label' => 'Login', 'url' => ['/user/security/login']];
+    } else {
+        $items[] = '<li>'
+            . Html::beginForm(['/user/security/logout'], 'post')
+            . Html::submitButton(
+                'Logout (' . $user->identity->username . ')',
+                ['class' => 'btn btn-link']
             )
-        ],
+            . Html::endForm()
+            . '</li>';
+    }
+    
+    echo Nav::widget([
+        'options' => ['class' => 'navbar-nav navbar-right'],
+        'items' => $items,
     ]);
     NavBar::end();
     ?>

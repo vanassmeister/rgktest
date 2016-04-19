@@ -8,6 +8,7 @@ use app\models\ArticleSearch;
 use yii\web\Controller;
 use yii\web\NotFoundHttpException;
 use yii\filters\VerbFilter;
+use yii\filters\AccessControl;
 
 /**
  * ArticleController implements the CRUD actions for Article model.
@@ -26,6 +27,15 @@ class ArticleController extends Controller
                     'delete' => ['POST'],
                 ],
             ],
+            'access' => [
+                'class' => AccessControl::className(),
+                'rules' => [
+                    [
+                        'allow' => true,
+                        'roles' => ['admin'],
+                    ],
+                ],
+            ]             
         ];
     }
 

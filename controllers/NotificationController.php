@@ -7,6 +7,7 @@ use yii\web\Controller;
 use yii\web\Response;
 use yii\web\NotFoundHttpException;
 use yii\filters\VerbFilter;
+use yii\filters\AccessControl;
 
 /**
  * NotificationController implements the CRUD actions for Notification model.
@@ -26,6 +27,15 @@ class NotificationController extends Controller
                     'delete' => ['POST'],
                 ],
             ],
+            'access' => [
+                'class' => AccessControl::className(),
+                'rules' => [
+                    [
+                        'allow' => true,
+                        'roles' => ['admin'],
+                    ],
+                ],
+            ]            
         ];
     }
 

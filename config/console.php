@@ -35,6 +35,12 @@ $config = [
         ],
     ],
     */
+    'modules' => [
+        'user' => [
+            'class' => 'dektrium\user\Module',
+            'admins' => ['admin']
+        ],
+    ],      
 ];
 
 if (YII_ENV_DEV) {
